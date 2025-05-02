@@ -39,19 +39,19 @@ public class MainMenu extends JFrame {
         });
         add(clashRoyaleButton);
 
-        JButton kanbanButton = new JButton("Kanban Quiz");
-        kanbanButton.addActionListener(e -> {
+        JButton fortniteButton = new JButton("Fortnite Quiz");
+        fortniteButton.addActionListener(e -> {
             dispose();
-            new Quiz(getKanbanFragen(), "Kanban Quiz");
+            new Quiz(getFortniteFragen(), "Fortnite Quiz");
         });
-        add(kanbanButton);
+        add(fortniteButton);
 
-        JButton agileButton = new JButton("Agile Methoden Quiz");
-        agileButton.addActionListener(e -> {
+        JButton minecraftButton = new JButton("Minecraft Quiz");
+        minecraftButton.addActionListener(e -> {
             dispose();
-            new Quiz(getAgileFragen(), "Agile Methoden Quiz");
+            new Quiz(getMinecraftFragen(), "Minecraft Quiz");
         });
-        add(agileButton);
+        add(minecraftButton);
 
         setVisible(true);
     }
@@ -82,13 +82,13 @@ public class MainMenu extends JFrame {
                 "Was ist ein Scrum-Artefakt?",
                 new String[]{"Sprint Goal", "Burnout", "Scrum Master", "Retrospektive"},
                 0
-                
+
         ));
 
         return fragen;
     }
 
-    private ArrayList<Projekt_Quiz.Frage> getKanbanFragen() {
+    private ArrayList<Projekt_Quiz.Frage> getFortniteFragen() {
         ArrayList<Projekt_Quiz.Frage> fragen = new ArrayList<>();
 
         fragen.add(new Frage(
@@ -114,7 +114,7 @@ public class MainMenu extends JFrame {
         return fragen;
     }
 
-    private ArrayList<Projekt_Quiz.Frage> getAgileFragen() {
+    private ArrayList<Projekt_Quiz.Frage> getMinecraftFragen() {
         ArrayList<Projekt_Quiz.Frage> fragen = new ArrayList<>();
 
         fragen.add(new Frage(
