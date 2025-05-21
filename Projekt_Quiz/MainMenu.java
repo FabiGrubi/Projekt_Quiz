@@ -1,7 +1,12 @@
 package Projekt_Quiz;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,272 +15,282 @@ import java.util.List;
 
 public class MainMenu extends JFrame {
 
-    private static Map<String, Benutzer> benutzerMap = new HashMap<>();
+    Map<String, Benutzer> benutzerMap = new HashMap<>();
     private static final String DATEI = "benutzer.txt";
-    private int punkte = 0;
-    private String benutzername = "Unbekannt";
-    private String anmeldedatum = "";
-
-    private static final String[][] geoFragen = {
-            {"Welcher ist der längste Fluss der Welt?", "Nil", "Amazonas", "Jangtse", "Mississippi"},
-            {"Welcher ist der größte Ozean der Erde?", "Pazifik", "Atlantik", "Indischer Ozean", "Arktischer Ozean"},
-            {"Wie heißt das größte Korallenriff der Welt?", "Great Barrier Reef", "Belize Barrier Reef", "Rotes Meer Riff", "Florida Reef"},
-            {"Welches Land hat die meisten Nachbarländer?", "China", "Deutschland", "Russland", "Brasilien"},
-            {"Wie heißt das höchste Gebirge der Erde?", "Himalaya", "Anden", "Alpen", "Rocky Mountains"},
-            {"In welchem Land liegt der Mount Everest?", "Nepal", "China", "Indien", "Pakistan"},
-            {"Welche ist die größte Insel der Welt?", "Grönland", "Australien", "Neuguinea", "Borneo"},
-            {"Welche Wüste ist die größte Trockenwüste der Welt?", "Sahara", "Gobi", "Kalahari", "Atacama"},
-            {"Welches Land hat die längste Küstenlinie?", "Kanada", "Russland", "Indonesien", "USA"},
-            {"In welchem Land befindet sich die Atacama-Wüste?", "Chile", "Argentinien", "Peru", "Bolivien"},
-            {"Wie heißt der tiefste Punkt der Erde (unter Wasser)?", "Marianengraben", "Atlantischer Graben", "Java-Graben", "Puerto-Rico-Graben"},
-            {"Welches Land hat die meisten aktiven Vulkane?", "Indonesien", "Island", "Japan", "Philippinen"},
-            {"Welches Gebirge trennt Europa und Asien?", "Ural", "Alpen", "Kaukasus", "Himalaya"},
-            {"Welches Land hat als einziges eine Flagge, die nicht rechteckig oder quadratisch ist?", "Nepal", "Schweiz", "Bhutan", "Vatikanstadt"},
-            {"Welches ist das bevölkerungsreichste Land Afrikas?", "Nigeria", "Ägypten", "Südafrika", "Äthiopien"},
-            {"Welches Land hat die größte Fläche?", "Russland", "Kanada", "China", "USA"},
-            {"Welcher Kontinent hat die meisten Länder?", "Afrika", "Europa", "Asien", "Südamerika"},
-            {"Welches Land hat die größte Bevölkerung?", "China", "Indien", "USA", "Indonesien"},
-            {"Welcher See ist der größte Süßwassersee der Welt (nach Fläche)?", "Oberer See", "Victoriasee", "Baikalsee", "Michigansee"},
-            {"Welcher Kontinent ist der kleinste?", "Australien", "Europa", "Antarktika", "Südamerika"},
-            {"Wie heißt die Hauptstadt von Kanada?", "Ottawa", "Toronto", "Montreal", "Vancouver"},
-            {"Welches Land besteht aus über 17.000 Inseln?", "Indonesien", "Philippinen", "Japan", "Maldiven"},
-            {"Welches europäische Land hat die meisten Einwohner?", "Deutschland", "Frankreich", "Italien", "Vereinigtes Königreich"},
-            {"Welche Stadt liegt auf zwei Kontinenten?", "Istanbul", "Kairo", "Moskau", "Athen"},
-            {"Welcher Fluss fließt durch Paris?", "Seine", "Thames", "Rhein", "Donau"},
-            {"Welche Insel ist die größte im Mittelmeer?", "Kreta", "Sizilien", "Zypern", "Korsika"},
-            {"Welches Land hat die meisten offiziellen Amtssprachen?", "Südafrika", "Indien", "Schweiz", "Kanada"},
-            {"Welches Land hat die längste Grenze zu den USA?", "Kanada", "Mexiko", "Russland", "Guatemala"},
-            {"Welche Stadt ist die größte der Welt nach Fläche?", "New York", "Tokyo", "Mexico City", "Sydney"},
-            {"Welches Land hat die meisten Vulkane?", "Indonesien", "Japan", "Island", "Italien"},
-            {"Welches Land hat die größte Zahl an UNESCO-Weltkulturerbestätten?", "Italien", "China", "Spanien", "Frankreich"}
-    };
+    int punkte = 0;
+    String benutzername = "";
+    String anmeldedatum = "";
+    private List<String> gekaufteTitel = new ArrayList<>();
+    private String aktuellerTitel = "";
+    private ImageIcon profilBild = null;
 
     public MainMenu() {
-        super("Quiz");
+        datenLaden();
+        zeigeLoginFenster();
 
         try {
-            ImageIcon icon = new ImageIcon(getClass().getResource("/Bilder/AppIcon.png"));
-            this.setIconImage(icon.getImage());
-        } catch (Exception e) {
-            System.err.println("Icon konnte nicht geladen werden.");
+            Image icon = ImageIO.read(getClass().getResource("/Bilder/AppIcon.png"));
+            setIconImage(icon);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        datenLaden();
-        benutzerAnmeldung();
-
+    private void initialisiereMainUI() {
+        this.setTitle("Quiz - Geo-Quiz");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.getContentPane().setBackground(Color.WHITE);
+        this.setLayout(new BorderLayout());
 
         JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Menü");
-        JMenu Bestenliste = new JMenu("Bestenliste");
-        JMenu shopMenu = new JMenu("Shop");
-        JMenuItem shopItem = new JMenuItem("Shop öffnen");
-        shopMenu.add(shopItem);
-        menuBar.add(shopMenu);
+        menuBar.setBackground(new Color(33, 37, 41));
+        menuBar.setForeground(Color.WHITE);
 
+        JMenu menu = new JMenu("Menü");
+        menu.setForeground(Color.WHITE);
+        JMenu Bestenliste = new JMenu("Bestenliste");
+        Bestenliste.setForeground(Color.WHITE);
+        JMenu shopMenu = new JMenu("Shop");
+        shopMenu.setForeground(Color.WHITE);
+        JMenu benutzerMenu = new JMenu("Benutzer");
+        benutzerMenu.setForeground(Color.WHITE);
+
+        JMenuItem shopItem = new JMenuItem("Shop öffnen");
         JMenuItem punkteItem = new JMenuItem("Punkte anzeigen");
         JMenuItem profilItem = new JMenuItem("Profil ansehen");
         JMenuItem besten = new JMenuItem("Bestenliste anzeigen");
 
+        JMenuItem kontoLoeschen = new JMenuItem("Konto löschen");
+        JMenuItem abmelden = new JMenuItem("Abmelden");
+        JMenuItem neuerBenutzer = new JMenuItem("Neuer Benutzer");
+
+        shopMenu.add(shopItem);
         menu.add(punkteItem);
         menu.add(profilItem);
-        menuBar.add(menu);
         Bestenliste.add(besten);
+        benutzerMenu.add(neuerBenutzer);
+        benutzerMenu.add(abmelden);
+        benutzerMenu.add(kontoLoeschen);
+
+        menuBar.add(menu);
+        menuBar.add(shopMenu);
         menuBar.add(Bestenliste);
+        menuBar.add(benutzerMenu);
         setJMenuBar(menuBar);
 
         shopItem.addActionListener(e -> showShopFenster());
         besten.addActionListener(e -> showBestenliste());
         punkteItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Du hast aktuell " + punkte + " Punkte."));
         profilItem.addActionListener(e -> showProfilFenster());
+        kontoLoeschen.addActionListener(e -> kontoLoeschen());
+        abmelden.addActionListener(e -> {
+            this.dispose();
+            zeigeLoginFenster();
+        });
+        neuerBenutzer.addActionListener(e -> {
+            this.dispose();
+            zeigeLoginFenster();
+        });
 
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 150, 40, 150));
 
-        JLabel title = new JLabel("Wähle ein Quiz-Thema", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 20));
-        this.add(title, gbc);
+        JLabel title = new JLabel("Wähle ein Quiz-Thema");
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        title.setForeground(new Color(33, 37, 41));
+        title.setBorder(BorderFactory.createEmptyBorder(0, 0, 40, 0));
 
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        JButton laenderButton = new JButton("Länder Quiz");
-        this.add(laenderButton, gbc);
-        laenderButton.setPreferredSize(new Dimension(200, 50));
+        mainPanel.add(title);
 
-        gbc.gridx = 1;
-        JButton staedteButton = new JButton("Städte Quiz");
-        this.add(staedteButton, gbc);
-        staedteButton.setPreferredSize(new Dimension(200, 50));
+        JButton laenderButton = createStyledButton("Länder Quiz");
+        JButton staedteButton = createStyledButton("Städte Quiz");
+        JButton dailyQuizButton = createStyledButton("Daily Quiz");
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        JButton DailyQuiz = new JButton("Daily Quiz");
-        this.add(DailyQuiz, gbc);
-        DailyQuiz.setPreferredSize(new Dimension(200, 50));
+        mainPanel.add(laenderButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        mainPanel.add(staedteButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        mainPanel.add(dailyQuizButton);
 
-        this.setSize(600, 400);
-        this.setLocationRelativeTo(null);
+        dailyQuizButton.addActionListener(e -> {
+            if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Bitte zuerst anmelden!");
+                return;
+            }
+
+            Benutzer benutzer = benutzerMap.get(benutzername);
+            String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+            if (benutzer.getLetztesDailyDatum() != null && benutzer.getLetztesDailyDatum().equals(heute)) {
+                JOptionPane.showMessageDialog(this, "Du hast das Daily Quiz heute bereits gespielt.\nKomm morgen wieder!");
+                return;
+            }
+
+            benutzer.setLetztesDailyDatum(heute);
+            speichereBenutzer();
+
+            DailyQuiz();
+            LänderQuiz();
+            StädteQuiz();// dein bestehender Code zum Quizstart
+        });
+
+        laenderButton.addActionListener(e -> LänderQuiz());
+        staedteButton.addActionListener(e -> StädteQuiz());
+
+        this.add(mainPanel, BorderLayout.CENTER);
         this.setVisible(true);
-
-        DailyQuiz.addActionListener(e -> DailyQuiz());
     }
 
-    private void benutzerAnmeldung() {
-        benutzername = JOptionPane.showInputDialog(null, "Bitte gib deinen Namen ein:", "Anmeldung", JOptionPane.QUESTION_MESSAGE);
-        if (benutzername == null || benutzername.trim().isEmpty()) {
-            benutzername = "Unbekannt";
-        }
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(320, 60));
+        button.setPreferredSize(new Dimension(320, 60));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        button.setBackground(new Color(0, 123, 255));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        if (benutzerMap.containsKey(benutzername)) {
-            Benutzer b = benutzerMap.get(benutzername);
-            punkte = b.getPunkte();
-            anmeldedatum = b.getAnmeldedatum();
-        } else {
-            LocalDate today = LocalDate.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-            anmeldedatum = today.format(formatter);
-            benutzerMap.put(benutzername, new Benutzer(benutzername, 0, anmeldedatum, "Neuling"));
-        }
-    }
-
-    private void DailyQuiz() {
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < geoFragen.length; i++) {
-            indices.add(i);
-        }
-        Collections.shuffle(indices);
-
-        int richtigeAntworten = 0;
-        for (int i = 0; i < 5 && i < indices.size(); i++) {
-            int index = indices.get(i);
-            String[] frage = geoFragen[index];
-            List<String> antworten = new ArrayList<>(Arrays.asList(frage).subList(1, 5));
-            Collections.shuffle(antworten);
-
-            int auswahl = JOptionPane.showOptionDialog(null, frage[0], "Daily Quiz", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, antworten.toArray(), antworten.get(0));
-            if (auswahl >= 0 && antworten.get(auswahl).equals(frage[1])) {
-                JOptionPane.showMessageDialog(null, "Richtig!");
-                richtigeAntworten++;
-            } else if (auswahl >= 0) {
-                JOptionPane.showMessageDialog(null, "Falsch! Richtige Antwort: " + frage[1]);
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(0, 105, 217));
             }
-        }
 
-        pruefeErfolge();
-        int punkteZuwachs = richtigeAntworten * 10;
-        punkte += punkteZuwachs;
-        JOptionPane.showMessageDialog(null, "Du hast " + richtigeAntworten + " von 5 richtig beantwortet! +" + punkteZuwachs + " Punkte");
-        benutzerMap.get(benutzername).setPunkte(punkte);
-        datenSpeichern();
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(0, 123, 255));
+            }
+        });
+        return button;
     }
 
-    private void showShopFenster() {
-        JFrame shopFrame = new JFrame("Shop");
-        shopFrame.setSize(300, 200);
-        shopFrame.setLocationRelativeTo(this);
+    private void zeigeLoginFenster() {
+        JFrame loginFrame = new JFrame("Anmeldung");
+        loginFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        loginFrame.setLayout(new GridBagLayout());
+        loginFrame.getContentPane().setBackground(new Color(245, 245, 245));
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        String[] titelOptionen = {"Quiz-Anfänger (50 Punkte)", "Quiz-Experte (250 Punkte)", "Quiz-Meister (500 Punkte)", "Quiz-LEGENDE (999 Punkte)"};
-        int[] titelKosten = {50, 250, 500, 999};
+        panel.setPreferredSize(new Dimension(400, 320));
+        panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        panel.setBackground(Color.WHITE);
+        panel.setOpaque(true);
+        panel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        for (int i = 0; i < titelOptionen.length; i++) {
-            int kosten = titelKosten[i];
-            String titelName = titelOptionen[i].split(" ")[0];
-            JButton button = new JButton(titelOptionen[i]);
-            button.addActionListener(e -> {
-                Benutzer b = benutzerMap.get(benutzername);
-                if (b.getTitel().equals(titelName)) {
-                    JOptionPane.showMessageDialog(null, "Du hast diesen Titel bereits!");
-                } else if (punkte >= kosten) {
-                    punkte -= kosten;
-                    b.setPunkte(punkte);
-                    b.setTitel(titelName);
-                    datenSpeichern();
-                    JOptionPane.showMessageDialog(null, "Titel gekauft: " + titelName);
-                    shopFrame.dispose();
+        JLabel titleLabel = new JLabel("Willkommen beim Geo-Quiz");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titleLabel.setForeground(new Color(33, 37, 41));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
+
+        JTextArea subtitle = new JTextArea("Bitte gib deinen Benutzernamen ein:");
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitle.setForeground(new Color(80, 80, 80));
+        subtitle.setEditable(false);
+        subtitle.setOpaque(false);
+        subtitle.setWrapStyleWord(true);
+        subtitle.setLineWrap(true);
+        subtitle.setFocusable(false);
+        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        subtitle.setMaximumSize(new Dimension(300, 50));
+        subtitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setOpaque(false);
+        inputPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel nameLabel = new JLabel("Benutzername:");
+        nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        nameLabel.setForeground(new Color(33, 37, 41));
+        nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JTextField nameField = new JTextField(20);
+        nameField.setMaximumSize(new Dimension(280, 35));
+        nameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        nameField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        nameField.setBackground(new Color(245, 245, 245));
+        nameField.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
+
+        inputPanel.add(nameLabel);
+        inputPanel.add(Box.createVerticalStrut(8));
+        inputPanel.add(nameField);
+
+        JButton loginButton = new JButton("Anmelden");
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loginButton.setMaximumSize(new Dimension(280, 40));
+        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        loginButton.setBackground(new Color(0, 123, 255));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFocusPainted(false);
+        loginButton.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+        loginButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        loginButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                loginButton.setBackground(new Color(0, 105, 217));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                loginButton.setBackground(new Color(0, 123, 255));
+            }
+        });
+
+        loginButton.addActionListener(e -> {
+
+            String eingegebenerName = nameField.getText().trim();
+            if (eingegebenerName.isEmpty()) {
+                JOptionPane.showMessageDialog(loginFrame, "Bitte gib einen Benutzernamen ein.");
+            } else {
+                benutzername = eingegebenerName;
+                if (!benutzerMap.containsKey(benutzername)) {
+                    anmeldedatum = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+                    benutzerMap.put(benutzername, new Benutzer(benutzername, anmeldedatum, 0));
+                    speichereBenutzer();
+                    punkte = 0;
                 } else {
-                    JOptionPane.showMessageDialog(null, "Nicht genug Punkte!");
+                    punkte = benutzerMap.get(benutzername).getPunkte();
                 }
-            });
-            panel.add(button);
-        }
+                loginFrame.dispose();
+                initialisiereMainUI();
 
-        shopFrame.add(panel);
-        shopFrame.setVisible(true);
-    }
-
-    private void showProfilFenster() {
-        JFrame profilFrame = new JFrame("Mein Profil");
-        profilFrame.setSize(300, 200);
-        profilFrame.setLocationRelativeTo(this);
-
-        JLabel nameLabel = new JLabel("Name: " + benutzername);
-        JLabel punkteLabel = new JLabel("Punkte: " + punkte);
-        JLabel datumLabel = new JLabel("Angemeldet seit: " + anmeldedatum);
-        JLabel titelLabel = new JLabel("Titel: " + benutzerMap.get(benutzername).getTitel());
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(nameLabel);
-        panel.add(punkteLabel);
-        panel.add(datumLabel);
-        panel.add(titelLabel);
-        profilFrame.add(panel);
-        profilFrame.setVisible(true);
-    }
-
-    private void showBestenliste() {
-        JFrame besteFrame = new JFrame("Bestenliste");
-        besteFrame.setSize(400, 300);
-        besteFrame.setLocationRelativeTo(this);
-
-        List<Benutzer> benutzerListe = new ArrayList<>(benutzerMap.values());
-        benutzerListe.sort((b1, b2) -> Integer.compare(b2.getPunkte(), b1.getPunkte()));
-        StringBuilder bestenListeText = new StringBuilder("<html><h2>Bestenliste</h2>");
-        int rank = 1;
-        for (Benutzer b : benutzerListe) {
-            bestenListeText.append(rank).append(". ").append(b.getName()).append(" - ").append(b.getPunkte()).append(" Punkte<br>");
-            rank++;
-        }
-        bestenListeText.append("</html>");
-
-        JLabel bestenListeLabel = new JLabel(bestenListeText.toString());
-        besteFrame.add(bestenListeLabel);
-        besteFrame.setVisible(true);
-    }
-
-    private void datenSpeichern() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(DATEI))) {
-            for (Benutzer b : benutzerMap.values()) {
-                writer.println(b.getName() + ";" + b.getPunkte() + ";" + b.getAnmeldedatum() + ";" + b.getTitel());
             }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        });
+        nameField.addActionListener(e -> loginButton.doClick());
+
+        panel.add(titleLabel);
+        panel.add(subtitle);
+        panel.add(inputPanel);
+        panel.add(Box.createVerticalStrut(20));
+        panel.add(loginButton);
+
+        loginFrame.add(panel);
+        loginFrame.pack();
+        loginFrame.setLocationRelativeTo(null);
+        loginFrame.setVisible(true);
     }
 
     private void datenLaden() {
-        File file = new File(DATEI);
-        if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String zeile;
-            while ((zeile = reader.readLine()) != null) {
-                String[] teile = zeile.split(";");
-                if (teile.length >= 4) {
-                    String name = teile[0];
-                    int punkte = Integer.parseInt(teile[1]);
-                    String datum = teile[2];
-                    String titel = teile[3];
-                    Benutzer b = new Benutzer(name, punkte, datum, titel);
-                    benutzerMap.put(name, b);
+        try (BufferedReader br = new BufferedReader(new FileReader("benutzer.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length >= 3) {
+                    String name = parts[0];
+                    String datum = parts[1];
+                    int punkte = Integer.parseInt(parts[2]);
+                    Benutzer benutzer = new Benutzer(name, datum, punkte);
+                    if (parts.length == 4) {
+                        benutzer.setLetztesDailyDatum(parts[3]);
+                    }
+                    benutzerMap.put(name, benutzer);
                 }
             }
         } catch (IOException e) {
@@ -283,45 +298,310 @@ public class MainMenu extends JFrame {
         }
     }
 
-    private void ladeErfolge() {
-        // Dummy-Methode
+    public void speichereBenutzer() {
+        try (PrintWriter pw = new PrintWriter("benutzer.txt")) {
+            for (Benutzer benutzer : benutzerMap.values()) {
+                pw.println(benutzer.getName() + ";" + benutzer.getAnmeldedatum() + ";" +
+                        benutzer.getPunkte() + ";" + benutzer.getLetztesDailyDatum());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void speichernErfolge() {
-        // Dummy-Methode
+    public void punkteHinzufuegen(int punkte) {
+        this.punkte += punkte;
+        Benutzer benutzer = benutzerMap.get(benutzername);
+        if (benutzer != null) {
+            benutzer.setPunkte(benutzer.getPunkte() + punkte);
+            speichereBenutzer();
+        }
     }
 
-    private void pruefeErfolge() {
-        // Dummy-Methode
+    private void kontoLoeschen() {
+        if (benutzerMap.containsKey(benutzername)) {
+            int antwort = JOptionPane.showConfirmDialog(this, "Willst du wirklich deinen Account löschen?", "Account löschen",
+                    JOptionPane.YES_NO_OPTION);
+            if (antwort == JOptionPane.YES_OPTION) {
+                benutzerMap.remove(benutzername);
+                speichereBenutzer();
+                JOptionPane.showMessageDialog(this, "Account wurde gelöscht.");
+                this.dispose();
+                zeigeLoginFenster();
+            }
+        }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainMenu::new);
+    private void showShopFenster() {
+        JFrame shopFrame = new JFrame("🛍️ Titel-Shop");
+
+        // === Vollbild ===
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        device.setFullScreenWindow(shopFrame);
+        shopFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // === Titel-Leiste ===
+        JLabel punktLabel = new JLabel("", SwingConstants.CENTER);
+        punktLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        punktLabel.setBorder(BorderFactory.createEmptyBorder(30, 10, 30, 10));
+        shopFrame.add(punktLabel, BorderLayout.NORTH);
+
+        // Funktion zum Update des Punkt-Labels
+        Runnable updatePunkteLabel = () -> {
+            String punktInfo = "Verfügbare Punkte: " + punkte + " | Aktueller Titel: " + (aktuellerTitel != null ? aktuellerTitel : "Keiner");
+            punktLabel.setText(punktInfo);
+        };
+        updatePunkteLabel.run();
+
+        // === Titel-Daten ===
+        String[] titelNamen = {"Fortgeschrittener", "Meister", "CEO", "GOAT"};
+        int[] titelKosten = {50, 250, 500, 999};
+
+        // === Inhalt im Scrollbereich ===
+        JPanel inhaltPanel = new JPanel();
+        inhaltPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 40));
+        inhaltPanel.setBackground(Color.WHITE);
+
+        for (int i = 0; i < titelNamen.length; i++) {
+            String titel = titelNamen[i];
+            int kosten = titelKosten[i];
+
+            // === Titel-Karte ===
+            JPanel card = new JPanel();
+            card.setPreferredSize(new Dimension(300, 200));
+            card.setLayout(new BorderLayout());
+            card.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2),
+                    BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            ));
+            card.setBackground(new Color(245, 245, 245));
+
+            JLabel titelLabel = new JLabel(titel, SwingConstants.CENTER);
+            titelLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+
+            JButton button = new JButton();
+            button.setFont(new Font("SansSerif", Font.PLAIN, 18));
+            if (gekaufteTitel.contains(titel)) {
+                button.setText("✔️ Auswählen");
+            } else {
+                button.setText("💰 Kaufen für " + kosten + " Punkte");
+            }
+
+            button.addActionListener(e -> {
+                if (gekaufteTitel.contains(titel)) {
+                    aktuellerTitel = titel;
+                    JOptionPane.showMessageDialog(shopFrame, "Titel \"" + titel + "\" wurde ausgewählt.");
+                } else {
+                    if (punkte >= kosten) {
+                        punkte -= kosten;
+                        Benutzer benutzer = benutzerMap.get(benutzername);
+                        if (benutzer != null) {
+                            benutzer.setPunkte(punkte);
+                            speichereBenutzer();
+                        }
+                        gekaufteTitel.add(titel);
+                        aktuellerTitel = titel;
+                        JOptionPane.showMessageDialog(shopFrame, "Titel \"" + titel + "\" wurde gekauft und ausgewählt!");
+
+                        // Wichtig: VOLL BILDMODUS BEENDEN, bevor Fenster neu laden
+                        GraphicsDevice device1 = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                        device1.setFullScreenWindow(null);
+
+                        shopFrame.dispose();
+                        showShopFenster(); // neu laden
+                    } else {
+                        JOptionPane.showMessageDialog(shopFrame, "❌ Nicht genug Punkte!");
+                    }
+                }
+            });
+
+            card.add(titelLabel, BorderLayout.CENTER);
+            card.add(button, BorderLayout.SOUTH);
+
+            inhaltPanel.add(card);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(inhaltPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        shopFrame.add(scrollPane, BorderLayout.CENTER);
+
+        // === Zurück-Button ===
+        JButton zurueckButton = new JButton("Zurück");
+        zurueckButton.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        zurueckButton.addActionListener(e -> shopFrame.dispose());
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        bottomPanel.add(zurueckButton);
+        shopFrame.add(bottomPanel, BorderLayout.SOUTH);
+
+        shopFrame.setVisible(true);
     }
 
-    static class Benutzer {
-        private String titel;
+    private void showBestenliste() {
+        StringBuilder sb = new StringBuilder();
+        List<Benutzer> liste = new ArrayList<>(benutzerMap.values());
+        liste.sort((b1, b2) -> Integer.compare(b2.getPunkte(), b1.getPunkte()));
+        int count = 1;
+        sb.append("<html><body style='font-family:Segoe UI;'>");
+        sb.append("<h2>Bestenliste</h2>");
+        for (Benutzer b : liste) {
+            sb.append(count).append(". ").append(b.getName()).append(" - ").append(b.getPunkte()).append(" Punkte<br>");
+            count++;
+            if (count > 10) break;
+        }
+        sb.append("</body></html>");
+        JOptionPane.showMessageDialog(this, sb.toString());
+    }
+
+    private ImageIcon makeRoundedImage(Image img, int diameter) {
+        BufferedImage rounded = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = rounded.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setClip(new Ellipse2D.Double(0, 0, diameter, diameter));
+        g2.drawImage(img, 0, 0, diameter, diameter, null);
+        g2.dispose();
+        return new ImageIcon(rounded);
+    }
+
+    private void showProfilFenster() {
+        JFrame userFrame = new JFrame("Benutzerprofil");
+        Benutzer benutzer = benutzerMap.get(benutzername);
+        if (benutzer == null) return;
+
+        userFrame.setUndecorated(true);
+        userFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        userFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        userFrame.getContentPane().setBackground(new Color(245, 247, 250)); // sanftes Hellgrau-Blau
+
+        // Profilbild
+        JLabel profilBildLabel = new JLabel();
+        profilBildLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        profilBildLabel.setPreferredSize(new Dimension(200, 200));
+        profilBildLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        if (profilBild != null) {
+            profilBildLabel.setIcon(profilBild);
+        } else {
+            profilBildLabel.setText("Kein Profilbild");
+            profilBildLabel.setFont(new Font("SansSerif", Font.ITALIC, 18));
+        }
+
+        // Benutzerinfo als Label
+        JLabel infoLabel = new JLabel("<html><div style='text-align:center;'>"
+                + "<h1 style='font-size:32px;'>Benutzerprofil</h1>"
+                + "<p style='font-size:20px;'><b>Name:</b> " + benutzer.getName() + "<br>"
+                + "<b>Anmeldedatum:</b> " + benutzer.getAnmeldedatum() + "<br>"
+                + "<b>Punkte:</b> " + benutzer.getPunkte() + "<br>"
+                + "<b>Titel:</b> " + (aktuellerTitel == null || aktuellerTitel.isEmpty() ? "Neuling" : aktuellerTitel)
+                + "</p></div></html>");
+        infoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 50, 30, 50));
+
+        // Buttons
+        JButton profilbildButton = new JButton("Profilbild ändern");
+        profilbildButton.setBackground(new Color(30, 144, 255)); // DodgerBlue
+        profilbildButton.setForeground(Color.WHITE);
+        profilbildButton.setFocusPainted(false);
+        profilbildButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        profilbildButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        profilbildButton.setPreferredSize(new Dimension(200, 40));
+
+        profilbildButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Wähle ein Profilbild");
+            int result = fileChooser.showOpenDialog(userFrame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File ausgewählteDatei = fileChooser.getSelectedFile();
+                try {
+                    Image img = ImageIO.read(ausgewählteDatei);
+                    profilBild = makeRoundedImage(img, 200);
+                    profilBildLabel.setIcon(profilBild);
+                    profilBildLabel.setText(null);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(userFrame, "Fehler beim Laden des Bildes!", "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JButton closeButton = new JButton("Schließen");
+        closeButton.setBackground(new Color(220, 53, 69)); // Bootstrap-Rot
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setFocusPainted(false);
+        closeButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+        closeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        closeButton.setPreferredSize(new Dimension(200, 40));
+        closeButton.addActionListener(e -> userFrame.dispose());
+
+        // Buttons Panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 20));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(profilbildButton);
+        buttonPanel.add(closeButton);
+
+        // Hauptlayout
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setBackground(new Color(245, 247, 250));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(60, 100, 60, 100));
+
+        contentPanel.add(Box.createVerticalStrut(80)); // Abstand oben
+        contentPanel.add(profilBildLabel);
+        contentPanel.add(infoLabel);
+        contentPanel.add(buttonPanel);
+
+        userFrame.add(contentPanel);
+        userFrame.setVisible(true);
+    }
+
+    private void DailyQuiz() {
+        Quiz quiz = new Quiz (Fragen.geoFragen, this);
+        quiz.setVisible(true);
+        this.setVisible(false);
+    }
+
+    private void LänderQuiz() {
+        Quiz quiz = new Quiz (Fragen.länderFragen, this);
+        quiz.setVisible(true);
+        this.setVisible(false);
+    }
+
+    private void StädteQuiz() {
+        Quiz quiz = new Quiz (Fragen.städteFragen, this);
+        quiz.setVisible(true);
+        this.setVisible(false);
+    }
+
+    public class Benutzer {
         private String name;
-        private int punkte;
         private String anmeldedatum;
+        private int punkte;
+        private String letztesDailyDatum;
+        private String profilbildPfad;
 
-        public Benutzer(String name, int punkte, String anmeldedatum, String titel) {
+        public String getProfilbildPfad() {
+            return profilbildPfad;
+        }
+
+        public void setProfilbildPfad(String pfad) {
+            this.profilbildPfad = pfad;
+        }
+
+        public Benutzer(String name, String anmeldedatum, int punkte) {
             this.name = name;
-            this.punkte = punkte;
             this.anmeldedatum = anmeldedatum;
-            this.titel = titel;
-        }
-
-        public String getTitel() {
-            return titel;
-        }
-
-        public void setTitel(String titel) {
-            this.titel = titel;
+            this.punkte = punkte;
+            this.letztesDailyDatum = "";
         }
 
         public String getName() {
             return name;
+        }
+
+        public String getAnmeldedatum() {
+            return anmeldedatum;
         }
 
         public int getPunkte() {
@@ -332,8 +612,12 @@ public class MainMenu extends JFrame {
             this.punkte = punkte;
         }
 
-        public String getAnmeldedatum() {
-            return anmeldedatum;
+        public String getLetztesDailyDatum() {
+            return letztesDailyDatum;
+        }
+
+        public void setLetztesDailyDatum(String datum) {
+            this.letztesDailyDatum = datum;
         }
     }
 }
