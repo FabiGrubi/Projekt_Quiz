@@ -93,7 +93,7 @@ public class Quiz extends JFrame {
 
         for (int i = 0; i < 4; i++) {
             antwortButtons[i].setText(antworten.get(i));
-            antwortButtons[i].setBackground(new Color(230, 230, 230));
+            antwortButtons[i].setBackground(new Color(230, 230, 230, 68));
             antwortButtons[i].setEnabled(true);
         }
 

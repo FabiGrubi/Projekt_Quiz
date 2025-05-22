@@ -2,7 +2,6 @@ package Projekt_Quiz;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -25,6 +24,13 @@ public class MainMenu extends JFrame {
     private ImageIcon profilBild = null;
 
     public MainMenu() {
+        try {
+            // Setze das Look-and-Feel
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         datenLaden();
         zeigeLoginFenster();
 
@@ -45,7 +51,7 @@ public class MainMenu extends JFrame {
 
         JMenuBar menuBar = new JMenuBar();
         menuBar.setBackground(new Color(33, 37, 41));
-        menuBar.setForeground(Color.WHITE);
+        menuBar.setForeground(Color.BLACK);
 
         JMenu menu = new JMenu("Menü");
         menu.setForeground(Color.WHITE);
@@ -134,12 +140,35 @@ public class MainMenu extends JFrame {
             speichereBenutzer();
 
             DailyQuiz();
-            LänderQuiz();
-            StädteQuiz();// dein bestehender Code zum Quizstart
         });
 
-        laenderButton.addActionListener(e -> LänderQuiz());
-        staedteButton.addActionListener(e -> StädteQuiz());
+        laenderButton.addActionListener(e -> {
+            if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Bitte zuerst anmelden!");
+                return;
+            }
+
+            Benutzer benutzer = benutzerMap.get(benutzername);
+            String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+            speichereBenutzer();
+
+            LänderQuiz();
+        });
+
+        staedteButton.addActionListener(e -> {
+            if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Bitte zuerst anmelden!");
+                return;
+            }
+
+            Benutzer benutzer = benutzerMap.get(benutzername);
+            String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+
+            speichereBenutzer();
+
+            StädteQuiz();
+        });
 
         this.add(mainPanel, BorderLayout.CENTER);
         this.setVisible(true);
@@ -171,7 +200,6 @@ public class MainMenu extends JFrame {
 
     private void zeigeLoginFenster() {
         JFrame loginFrame = new JFrame("Anmeldung");
-        loginFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         loginFrame.setLayout(new GridBagLayout());
         loginFrame.getContentPane().setBackground(new Color(245, 245, 245));
@@ -190,7 +218,7 @@ public class MainMenu extends JFrame {
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
 
-        JTextArea subtitle = new JTextArea("Bitte gib deinen Benutzernamen ein:");
+        JTextArea subtitle = new JTextArea("Bitte gib deinen Benutzernamen und dein Passwort ein:");
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         subtitle.setForeground(new Color(80, 80, 80));
         subtitle.setEditable(false);
@@ -219,9 +247,25 @@ public class MainMenu extends JFrame {
         nameField.setBackground(new Color(245, 245, 245));
         nameField.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
 
+        JLabel passwortLabel = new JLabel("Passwort:");
+        passwortLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        passwortLabel.setForeground(new Color(33, 37, 41));
+        passwortLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPasswordField passwortField = new JPasswordField(20);
+        passwortField.setMaximumSize(new Dimension(280, 35));
+        passwortField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        passwortField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        passwortField.setBackground(new Color(245, 245, 245));
+        passwortField.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
+
         inputPanel.add(nameLabel);
         inputPanel.add(Box.createVerticalStrut(8));
         inputPanel.add(nameField);
+        inputPanel.add(Box.createVerticalStrut(15));
+        inputPanel.add(passwortLabel);
+        inputPanel.add(Box.createVerticalStrut(8));
+        inputPanel.add(passwortField);
 
         JButton loginButton = new JButton("Anmelden");
         loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -232,6 +276,20 @@ public class MainMenu extends JFrame {
         loginButton.setFocusPainted(false);
         loginButton.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
         loginButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        JButton passwortVergessenButton = new JButton("Passwort vergessen");
+        passwortVergessenButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        passwortVergessenButton.setMaximumSize(new Dimension(280, 40));
+        passwortVergessenButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        passwortVergessenButton.setBackground(new Color(220, 53, 69));
+        passwortVergessenButton.setForeground(Color.WHITE);
+        passwortVergessenButton.setFocusPainted(false);
+        passwortVergessenButton.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+        passwortVergessenButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        passwortVergessenButton.addActionListener(e -> {
+            JOptionPane.showMessageDialog(loginFrame, "Bitte wende dich an den Administrator, um dein Passwort zurückzusetzen.");
+        });
 
         loginButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -244,32 +302,42 @@ public class MainMenu extends JFrame {
         });
 
         loginButton.addActionListener(e -> {
-
             String eingegebenerName = nameField.getText().trim();
-            if (eingegebenerName.isEmpty()) {
-                JOptionPane.showMessageDialog(loginFrame, "Bitte gib einen Benutzernamen ein.");
+            String eingegebenesPasswort = new String(passwortField.getPassword());
+
+            if (eingegebenerName.isEmpty() || eingegebenesPasswort.isEmpty()) {
+                JOptionPane.showMessageDialog(loginFrame, "Bitte gib einen Benutzernamen und ein Passwort ein.");
             } else {
                 benutzername = eingegebenerName;
                 if (!benutzerMap.containsKey(benutzername)) {
                     anmeldedatum = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                    benutzerMap.put(benutzername, new Benutzer(benutzername, anmeldedatum, 0));
+                    benutzerMap.put(benutzername, new Benutzer(benutzername, anmeldedatum, 0, eingegebenesPasswort));
                     speichereBenutzer();
                     punkte = 0;
                 } else {
-                    punkte = benutzerMap.get(benutzername).getPunkte();
+                    Benutzer benutzer = benutzerMap.get(benutzername);
+                    if (benutzer.getPasswort().equals(eingegebenesPasswort)) {
+                        punkte = benutzer.getPunkte();
+                    } else {
+                        JOptionPane.showMessageDialog(loginFrame, "Falsches Passwort!");
+                        return;
+                    }
                 }
                 loginFrame.dispose();
                 initialisiereMainUI();
-
             }
         });
+
         nameField.addActionListener(e -> loginButton.doClick());
+        passwortField.addActionListener(e -> loginButton.doClick());
 
         panel.add(titleLabel);
         panel.add(subtitle);
         panel.add(inputPanel);
         panel.add(Box.createVerticalStrut(20));
         panel.add(loginButton);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(passwortVergessenButton);
 
         loginFrame.add(panel);
         loginFrame.pack();
@@ -282,13 +350,14 @@ public class MainMenu extends JFrame {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(";");
-                if (parts.length >= 3) {
+                if (parts.length >= 4) {
                     String name = parts[0];
                     String datum = parts[1];
                     int punkte = Integer.parseInt(parts[2]);
-                    Benutzer benutzer = new Benutzer(name, datum, punkte);
-                    if (parts.length == 4) {
-                        benutzer.setLetztesDailyDatum(parts[3]);
+                    String passwort = parts[3];
+                    Benutzer benutzer = new Benutzer(name, datum, punkte, passwort);
+                    if (parts.length == 5) {
+                        benutzer.setLetztesDailyDatum(parts[4]);
                     }
                     benutzerMap.put(name, benutzer);
                 }
@@ -302,7 +371,7 @@ public class MainMenu extends JFrame {
         try (PrintWriter pw = new PrintWriter("benutzer.txt")) {
             for (Benutzer benutzer : benutzerMap.values()) {
                 pw.println(benutzer.getName() + ";" + benutzer.getAnmeldedatum() + ";" +
-                        benutzer.getPunkte() + ";" + benutzer.getLetztesDailyDatum());
+                        benutzer.getPunkte() + ";" + benutzer.getPasswort() + ";" + benutzer.getLetztesDailyDatum());
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -335,29 +404,24 @@ public class MainMenu extends JFrame {
     private void showShopFenster() {
         JFrame shopFrame = new JFrame("🛍️ Titel-Shop");
 
-        // === Vollbild ===
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         device.setFullScreenWindow(shopFrame);
         shopFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // === Titel-Leiste ===
         JLabel punktLabel = new JLabel("", SwingConstants.CENTER);
         punktLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
         punktLabel.setBorder(BorderFactory.createEmptyBorder(30, 10, 30, 10));
         shopFrame.add(punktLabel, BorderLayout.NORTH);
 
-        // Funktion zum Update des Punkt-Labels
         Runnable updatePunkteLabel = () -> {
             String punktInfo = "Verfügbare Punkte: " + punkte + " | Aktueller Titel: " + (aktuellerTitel != null ? aktuellerTitel : "Keiner");
             punktLabel.setText(punktInfo);
         };
         updatePunkteLabel.run();
 
-        // === Titel-Daten ===
         String[] titelNamen = {"Fortgeschrittener", "Meister", "CEO", "GOAT"};
         int[] titelKosten = {50, 250, 500, 999};
 
-        // === Inhalt im Scrollbereich ===
         JPanel inhaltPanel = new JPanel();
         inhaltPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 40, 40));
         inhaltPanel.setBackground(Color.WHITE);
@@ -366,7 +430,6 @@ public class MainMenu extends JFrame {
             String titel = titelNamen[i];
             int kosten = titelKosten[i];
 
-            // === Titel-Karte ===
             JPanel card = new JPanel();
             card.setPreferredSize(new Dimension(300, 200));
             card.setLayout(new BorderLayout());
@@ -374,7 +437,7 @@ public class MainMenu extends JFrame {
                     BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2),
                     BorderFactory.createEmptyBorder(20, 20, 20, 20)
             ));
-            card.setBackground(new Color(245, 245, 245));
+            card.setBackground(new Color(245, 245, 245, 255));
 
             JLabel titelLabel = new JLabel(titel, SwingConstants.CENTER);
             titelLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
@@ -403,12 +466,7 @@ public class MainMenu extends JFrame {
                         aktuellerTitel = titel;
                         JOptionPane.showMessageDialog(shopFrame, "Titel \"" + titel + "\" wurde gekauft und ausgewählt!");
 
-                        // Wichtig: VOLL BILDMODUS BEENDEN, bevor Fenster neu laden
-                        GraphicsDevice device1 = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-                        device1.setFullScreenWindow(null);
-
                         shopFrame.dispose();
-                        showShopFenster(); // neu laden
                     } else {
                         JOptionPane.showMessageDialog(shopFrame, "❌ Nicht genug Punkte!");
                     }
@@ -426,7 +484,6 @@ public class MainMenu extends JFrame {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         shopFrame.add(scrollPane, BorderLayout.CENTER);
 
-        // === Zurück-Button ===
         JButton zurueckButton = new JButton("Zurück");
         zurueckButton.setFont(new Font("SansSerif", Font.PLAIN, 18));
         zurueckButton.addActionListener(e -> shopFrame.dispose());
@@ -474,9 +531,8 @@ public class MainMenu extends JFrame {
         userFrame.setUndecorated(true);
         userFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         userFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        userFrame.getContentPane().setBackground(new Color(245, 247, 250)); // sanftes Hellgrau-Blau
+        userFrame.getContentPane().setBackground(new Color(245, 247, 250));
 
-        // Profilbild
         JLabel profilBildLabel = new JLabel();
         profilBildLabel.setHorizontalAlignment(SwingConstants.CENTER);
         profilBildLabel.setPreferredSize(new Dimension(200, 200));
@@ -488,7 +544,6 @@ public class MainMenu extends JFrame {
             profilBildLabel.setFont(new Font("SansSerif", Font.ITALIC, 18));
         }
 
-        // Benutzerinfo als Label
         JLabel infoLabel = new JLabel("<html><div style='text-align:center;'>"
                 + "<h1 style='font-size:32px;'>Benutzerprofil</h1>"
                 + "<p style='font-size:20px;'><b>Name:</b> " + benutzer.getName() + "<br>"
@@ -499,9 +554,8 @@ public class MainMenu extends JFrame {
         infoLabel.setHorizontalAlignment(SwingConstants.CENTER);
         infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 50, 30, 50));
 
-        // Buttons
         JButton profilbildButton = new JButton("Profilbild ändern");
-        profilbildButton.setBackground(new Color(30, 144, 255)); // DodgerBlue
+        profilbildButton.setBackground(new Color(30, 144, 255));
         profilbildButton.setForeground(Color.WHITE);
         profilbildButton.setFocusPainted(false);
         profilbildButton.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -526,7 +580,7 @@ public class MainMenu extends JFrame {
         });
 
         JButton closeButton = new JButton("Schließen");
-        closeButton.setBackground(new Color(220, 53, 69)); // Bootstrap-Rot
+        closeButton.setBackground(new Color(220, 53, 69));
         closeButton.setForeground(Color.WHITE);
         closeButton.setFocusPainted(false);
         closeButton.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -534,20 +588,18 @@ public class MainMenu extends JFrame {
         closeButton.setPreferredSize(new Dimension(200, 40));
         closeButton.addActionListener(e -> userFrame.dispose());
 
-        // Buttons Panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 20));
         buttonPanel.setOpaque(false);
         buttonPanel.add(profilbildButton);
         buttonPanel.add(closeButton);
 
-        // Hauptlayout
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(new Color(245, 247, 250));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(60, 100, 60, 100));
 
-        contentPanel.add(Box.createVerticalStrut(80)); // Abstand oben
+        contentPanel.add(Box.createVerticalStrut(80));
         contentPanel.add(profilBildLabel);
         contentPanel.add(infoLabel);
         contentPanel.add(buttonPanel);
@@ -557,19 +609,19 @@ public class MainMenu extends JFrame {
     }
 
     private void DailyQuiz() {
-        Quiz quiz = new Quiz (Fragen.geoFragen, this);
+        Quiz quiz = new Quiz(Fragen.geoFragen, this);
         quiz.setVisible(true);
         this.setVisible(false);
     }
 
     private void LänderQuiz() {
-        Quiz quiz = new Quiz (Fragen.länderFragen, this);
+        Quiz quiz = new Quiz(Fragen.länderFragen, this);
         quiz.setVisible(true);
         this.setVisible(false);
     }
 
     private void StädteQuiz() {
-        Quiz quiz = new Quiz (Fragen.städteFragen, this);
+        Quiz quiz = new Quiz(Fragen.städteFragen, this);
         quiz.setVisible(true);
         this.setVisible(false);
     }
@@ -578,6 +630,7 @@ public class MainMenu extends JFrame {
         private String name;
         private String anmeldedatum;
         private int punkte;
+        private String passwort;
         private String letztesDailyDatum;
         private String profilbildPfad;
 
@@ -589,10 +642,11 @@ public class MainMenu extends JFrame {
             this.profilbildPfad = pfad;
         }
 
-        public Benutzer(String name, String anmeldedatum, int punkte) {
+        public Benutzer(String name, String anmeldedatum, int punkte, String passwort) {
             this.name = name;
             this.anmeldedatum = anmeldedatum;
             this.punkte = punkte;
+            this.passwort = passwort;
             this.letztesDailyDatum = "";
         }
 
@@ -610,6 +664,14 @@ public class MainMenu extends JFrame {
 
         public void setPunkte(int punkte) {
             this.punkte = punkte;
+        }
+
+        public String getPasswort() {
+            return passwort;
+        }
+
+        public void setPasswort(String passwort) {
+            this.passwort = passwort;
         }
 
         public String getLetztesDailyDatum() {
