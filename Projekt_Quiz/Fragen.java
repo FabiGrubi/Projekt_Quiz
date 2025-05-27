@@ -9,7 +9,7 @@ public class Fragen {
             {"Wie heißt die Hauptstadt von Australien?", "Canberra", "Sydney", "Melbourne", "Perth"},
     };
 
-    public static final String[][] länderFragen = {
+    public static final String[][] laenderFragen = {
             {"Welches Land hat die meisten Einwohner?", "China", "Indien", "USA", "Indonesien"},
             {"Welches Land ist flächenmäßig das größte?", "Russland", "Kanada", "China", "USA"},
             {"In welchem Land steht der Eiffelturm?", "Frankreich", "Italien", "Spanien", "Deutschland"},
@@ -17,7 +17,7 @@ public class Fragen {
             {"Welches Land hat die Form eines Stiefels?", "Italien", "Spanien", "Griechenland", "Portugal"}
     };
 
-    public static final String[][] städteFragen = {
+    public static final String[][] staedteFragen = {
             {"Welche Stadt ist die Hauptstadt von Deutschland?", "Berlin", "Hamburg", "München", "Köln"},
             {"Welche ist die bevölkerungsreichste Stadt der Welt?", "Tokio", "Delhi", "Shanghai", "São Paulo"},
             {"In welcher Stadt steht das Kolosseum?", "Rom", "Athen", "Paris", "Madrid"},

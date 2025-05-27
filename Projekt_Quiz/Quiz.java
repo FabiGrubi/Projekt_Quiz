@@ -15,6 +15,7 @@ public class Quiz extends JFrame {
     private int frageIndex = 0;
     private int punkteProRichtigeAntwort = 10;
     private int punkteImQuiz = 0;
+    private boolean frageBeantwortet = false;
 
     private JLabel frageLabel;
     private JButton[] antwortButtons;
@@ -58,9 +59,10 @@ public class Quiz extends JFrame {
             btn.setFont(new Font("Segoe UI", Font.PLAIN, 18));
             btn.setBackground(new Color(230, 230, 230));
             btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            final int index = i;
+            int index = i;
             btn.addActionListener(e -> {
                 if (timer != null) timer.stop();
+                if (frageBeantwortet) return;
                 ausgewaehlteAntwort = index;
                 zeigeErgebnis();
             });
@@ -115,10 +117,10 @@ public class Quiz extends JFrame {
     }
 
     private void zeigeErgebnis() {
-        for (JButton btn : antwortButtons) {
-            btn.setEnabled(false);
-        }
-
+         for (JButton btn : antwortButtons) {
+             btn.setFocusable(false);
+         }
+        frageBeantwortet = true;
         int aktuelleFrage = frageSequenz.get(frageIndex);
         String[] frageSet = fragen[aktuelleFrage];
         String richtigeAntwort = frageSet[1];
@@ -137,10 +139,17 @@ public class Quiz extends JFrame {
             antwortButtons[ausgewaehlteAntwort].setBackground(new Color(255, 160, 122)); // rot
         }
 
+
+
         new Timer(2000, e -> {
             ((Timer) e.getSource()).stop();
             frageIndex++;
+            frageBeantwortet = false;
             if (frageIndex < frageSequenz.size()) {
+                for (JButton btn : antwortButtons) {
+                    btn.setFocusable(false);
+                }
+
                 ladeFrage();
                 startTimer();
             } else {
