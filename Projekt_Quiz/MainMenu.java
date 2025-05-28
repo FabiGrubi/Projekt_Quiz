@@ -45,60 +45,10 @@ public class MainMenu extends JFrame {
         this.getContentPane().setBackground(Color.WHITE);
         this.setLayout(new BorderLayout());
 
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.setBackground(new Color(33, 37, 41));
-        menuBar.setForeground(Color.BLACK);
-
-        JMenu menu = new JMenu("Menü");
-        menu.setForeground(Color.BLACK);
-        JMenu Bestenliste = new JMenu("Bestenliste");
-        Bestenliste.setForeground(Color.BLACK);
-        JMenu shopMenu = new JMenu("Shop");
-        shopMenu.setForeground(Color.BLACK);
-        JMenu benutzerMenu = new JMenu("Benutzer");
-        benutzerMenu.setForeground(Color.BLACK);
-
-        JMenuItem shopItem = new JMenuItem("Shop öffnen");
-        JMenuItem punkteItem = new JMenuItem("Punkte anzeigen");
-        JMenuItem profilItem = new JMenuItem("Profil ansehen");
-        JMenuItem besten = new JMenuItem("Bestenliste anzeigen");
-        JMenuItem kontoLoeschen = new JMenuItem("Konto löschen");
-        JMenuItem abmelden = new JMenuItem("Abmelden");
-        JMenuItem neuerBenutzer = new JMenuItem("Neuer Benutzer");
-
-        shopMenu.add(shopItem);
-        menu.add(punkteItem);
-        menu.add(profilItem);
-        Bestenliste.add(besten);
-        benutzerMenu.add(neuerBenutzer);
-        benutzerMenu.add(abmelden);
-        benutzerMenu.add(kontoLoeschen);
-
-        menuBar.add(menu);
-        menuBar.add(shopMenu);
-        menuBar.add(Bestenliste);
-        menuBar.add(benutzerMenu);
-
-        setJMenuBar(menuBar);
-
-        shopItem.addActionListener(e -> showShopFenster());
-        besten.addActionListener(e -> showBestenliste());
-        punkteItem.addActionListener(e -> JOptionPane.showMessageDialog(this, "Du hast aktuell " + punkte + " Punkte."));
-        profilItem.addActionListener(e -> showProfilFenster());
-        kontoLoeschen.addActionListener(e -> kontoLoeschen());
-        abmelden.addActionListener(e -> {
-            this.dispose();
-            zeigeLoginFenster();
-        });
-        neuerBenutzer.addActionListener(e -> {
-            this.dispose();
-            zeigeLoginFenster();
-        });
-
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 150, 40, 150));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel title = new JLabel("Wähle ein Quiz-Thema");
         title.setFont(new Font("Segoe UI", Font.BOLD, 36));
@@ -107,41 +57,45 @@ public class MainMenu extends JFrame {
         mainPanel.add(title, BorderLayout.NORTH);
 
         JPanel quizPanel = new JPanel();
-        quizPanel.setLayout(new BoxLayout(quizPanel, BoxLayout.Y_AXIS));
+        quizPanel.setLayout(new GridLayout(3, 1, 20, 20));
         quizPanel.setBackground(Color.WHITE);
+        quizPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
 
         JButton laenderButton = createStyledButton("Länder Quiz", 400, 80);
         JButton staedteButton = createStyledButton("Städte Quiz", 400, 80);
         JButton dailyQuizButton = createStyledButton("Daily Quiz", 400, 80);
 
         quizPanel.add(laenderButton);
-        quizPanel.add(Box.createVerticalStrut(20));
         quizPanel.add(staedteButton);
-        quizPanel.add(Box.createVerticalStrut(20));
         quizPanel.add(dailyQuizButton);
 
-        JPanel centerPanel = new JPanel(new GridBagLayout());
-        centerPanel.setBackground(Color.WHITE);
-        centerPanel.add(quizPanel);
+        mainPanel.add(quizPanel, BorderLayout.CENTER);
 
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        JPanel sidePanel = new JPanel();
+        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        sidePanel.setBackground(Color.WHITE);
+        sidePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-        bottomPanel.setBackground(Color.WHITE);
+        JButton shopButton = createStyledButton("Shop öffnen", 200, 60);
+        JButton profilButton = createStyledButton("Profil ansehen", 200, 60);
+        JButton punkteButton = createStyledButton("Punkte anzeigen", 200, 60);
+        JButton bestenlisteButton = createStyledButton("Bestenliste anzeigen", 200, 60);
+        JButton kontoLoeschenButton = createStyledButton("Konto löschen", 200, 60);
+        JButton abmeldenButton = createStyledButton("Abmelden", 200, 60);
 
-        JButton shopButton = createStyledButton("Shop öffnen", 300, 60);
-        JButton profilButton = createStyledButton("Profil ansehen", 300, 60);
+        sidePanel.add(shopButton);
+        sidePanel.add(Box.createVerticalStrut(20));
+        sidePanel.add(profilButton);
+        sidePanel.add(Box.createVerticalStrut(20));
+        sidePanel.add(punkteButton);
+        sidePanel.add(Box.createVerticalStrut(20));
+        sidePanel.add(bestenlisteButton);
+        sidePanel.add(Box.createVerticalStrut(20));
+        sidePanel.add(kontoLoeschenButton);
+        sidePanel.add(Box.createVerticalStrut(20));
+        sidePanel.add(abmeldenButton);
 
-        bottomPanel.add(shopButton);
-        bottomPanel.add(Box.createVerticalStrut(20));
-        bottomPanel.add(profilButton);
-
-        JPanel bottomCenterPanel = new JPanel(new GridBagLayout());
-        bottomCenterPanel.setBackground(Color.WHITE);
-        bottomCenterPanel.add(bottomPanel);
-
-        mainPanel.add(bottomCenterPanel, BorderLayout.SOUTH);
+        mainPanel.add(sidePanel, BorderLayout.EAST);
 
         dailyQuizButton.addActionListener(e -> {
             if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
@@ -183,6 +137,13 @@ public class MainMenu extends JFrame {
 
         shopButton.addActionListener(e -> showShopFenster());
         profilButton.addActionListener(e -> showProfilFenster());
+        punkteButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Du hast aktuell " + punkte + " Punkte."));
+        bestenlisteButton.addActionListener(e -> showBestenliste());
+        kontoLoeschenButton.addActionListener(e -> kontoLoeschen());
+        abmeldenButton.addActionListener(e -> {
+            this.dispose();
+            zeigeLoginFenster();
+        });
 
         this.add(mainPanel, BorderLayout.CENTER);
         this.setVisible(true);
@@ -327,6 +288,7 @@ public class MainMenu extends JFrame {
                     if (benutzer.getPasswort().equals(eingegebenesPasswort)) {
                         punkte = benutzer.getPunkte();
                         gekaufteTitel = benutzer.getGekaufteTitel();
+                        profilBild = benutzer.getProfilbild();
                     } else {
                         JOptionPane.showMessageDialog(loginFrame, "Falsches Passwort!");
                         return;
@@ -375,6 +337,16 @@ public class MainMenu extends JFrame {
                         String gekaufteTitelStr = parts[5];
                         benutzer.setGekaufteTitel(Arrays.asList(gekaufteTitelStr.split(",")));
                     }
+                    if (parts.length >= 7) {
+                        String profilbildPfad = parts[6];
+                        benutzer.setProfilbildPfad(profilbildPfad);
+                        try {
+                            Image img = ImageIO.read(new File(profilbildPfad));
+                            benutzer.setProfilbild(makeRoundedImage(img, 200));
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
                     benutzerMap.put(name, benutzer);
                 }
             }
@@ -387,9 +359,10 @@ public class MainMenu extends JFrame {
         try (PrintWriter pw = new PrintWriter("benutzer.txt")) {
             for (Benutzer benutzer : benutzerMap.values()) {
                 String gekaufteTitelStr = String.join(",", benutzer.getGekaufteTitel());
+                String profilbildPfad = benutzer.getProfilbildPfad() != null ? benutzer.getProfilbildPfad() : "";
                 pw.println(benutzer.getName() + ";" + benutzer.getAnmeldedatum() + ";" +
                         benutzer.getPunkte() + ";" + benutzer.getPasswort() + ";" +
-                        benutzer.getLetztesDailyDatum() + ";" + gekaufteTitelStr);
+                        benutzer.getLetztesDailyDatum() + ";" + gekaufteTitelStr + ";" + profilbildPfad);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -593,6 +566,9 @@ public class MainMenu extends JFrame {
                     profilBild = makeRoundedImage(img, 200);
                     profilBildLabel.setIcon(profilBild);
                     profilBildLabel.setText(null);
+                    benutzer.setProfilbild(profilBild);
+                    benutzer.setProfilbildPfad(ausgewählteDatei.getAbsolutePath());
+                    speichereBenutzer();
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(userFrame, "Fehler beim Laden des Bildes!", "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
@@ -657,6 +633,7 @@ public class MainMenu extends JFrame {
         private String letztesDailyDatum;
         private String profilbildPfad;
         private List<String> gekaufteTitel = new ArrayList<>();
+        private ImageIcon profilbild;
 
         public String getProfilbildPfad() {
             return profilbildPfad;
@@ -664,6 +641,14 @@ public class MainMenu extends JFrame {
 
         public void setProfilbildPfad(String pfad) {
             this.profilbildPfad = pfad;
+        }
+
+        public ImageIcon getProfilbild() {
+            return profilbild;
+        }
+
+        public void setProfilbild(ImageIcon profilbild) {
+            this.profilbild = profilbild;
         }
 
         public Benutzer(String name, String anmeldedatum, int punkte, String passwort) {
