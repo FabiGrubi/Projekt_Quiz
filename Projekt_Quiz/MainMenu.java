@@ -57,17 +57,19 @@ public class MainMenu extends JFrame {
         mainPanel.add(title, BorderLayout.NORTH);
 
         JPanel quizPanel = new JPanel();
-        quizPanel.setLayout(new GridLayout(3, 1, 20, 20));
+        quizPanel.setLayout(new GridLayout(4, 1, 20, 20)); // Geändert auf 4 Zeilen
         quizPanel.setBackground(Color.WHITE);
         quizPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
 
         JButton laenderButton = createStyledButton("Länder Quiz", 400, 80);
         JButton staedteButton = createStyledButton("Städte Quiz", 400, 80);
         JButton dailyQuizButton = createStyledButton("Daily Quiz", 400, 80);
+        JButton quizMitLebenButton = createStyledButton("Quiz mit Leben", 400, 80); // Neuer Button
 
         quizPanel.add(laenderButton);
         quizPanel.add(staedteButton);
         quizPanel.add(dailyQuizButton);
+        quizPanel.add(quizMitLebenButton); // Neuer Button hinzugefügt
 
         mainPanel.add(quizPanel, BorderLayout.CENTER);
 
@@ -133,6 +135,14 @@ public class MainMenu extends JFrame {
             String heute = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
             speichereBenutzer();
             StädteQuiz();
+        });
+
+        quizMitLebenButton.addActionListener(e -> {
+            if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Bitte zuerst anmelden!");
+                return;
+            }
+            QuizMitLeben();
         });
 
         shopButton.addActionListener(e -> showShopFenster());
@@ -394,8 +404,7 @@ public class MainMenu extends JFrame {
 
     private void showShopFenster() {
         JFrame shopFrame = new JFrame("🛍️ Titel-Shop");
-        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        device.setFullScreenWindow(shopFrame);
+        shopFrame.setSize(1600, 1000);
         shopFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JLabel punktLabel = new JLabel("", SwingConstants.CENTER);
@@ -495,16 +504,71 @@ public class MainMenu extends JFrame {
         StringBuilder sb = new StringBuilder();
         List<Benutzer> liste = new ArrayList<>(benutzerMap.values());
         liste.sort((b1, b2) -> Integer.compare(b2.getPunkte(), b1.getPunkte()));
+
+        sb.append("<html><body style='font-family:Segoe UI, sans-serif; background:#f9f9f9; padding:20px;'>");
+        sb.append("<h1 style='color:#2c3e50; text-align:center;'>🏆 Die besten der Besten</h1>");
+        sb.append("<table style='border-collapse:collapse; width:100%; font-size:18px;'>");
+        sb.append("<tr style='background:#34495e; color:white;'>");
+        sb.append("<th style='padding:12px; text-align:left;'>Platz</th>");
+        sb.append("<th style='padding:12px; text-align:left;'>Name</th>");
+        sb.append("<th style='padding:12px; text-align:right;'>Punkte</th>");
+        sb.append("</tr>");
+
         int count = 1;
-        sb.append("<html><body style='font-family:Segoe UI;'>");
-        sb.append("<h2>Bestenliste</h2>");
         for (Benutzer b : liste) {
-            sb.append(count).append(". ").append(b.getName()).append(" - ").append(b.getPunkte()).append(" Punkte<br>");
-            count++;
             if (count > 10) break;
+
+            String bgColor;
+            if (count == 1) {
+                bgColor = "#ffd700"; // Gold
+            } else if (count == 2) {
+                bgColor = "#c0c0c0"; // Silber
+            } else if (count == 3) {
+                bgColor = "#cd7f32"; // Bronze
+            } else {
+                bgColor = (count % 2 == 0) ? "#f0f0f0" : "#ffffff";
+            }
+
+            String platzText;
+            switch (count) {
+                case 1:
+                    platzText = "🥇";
+                    break;
+                case 2:
+                    platzText = "🥈";
+                    break;
+                case 3:
+                    platzText = "🥉";
+                    break;
+                default:
+                    platzText = count + ".";
+            }
+
+            sb.append("<tr style='background:").append(bgColor).append(";'>");
+            sb.append("<td style='padding:12px;'>").append(platzText).append("</td>");
+            sb.append("<td style='padding:12px;'>").append(b.getName()).append("</td>");
+            sb.append("<td style='padding:12px; text-align:right;'>").append(b.getPunkte()).append("</td>");
+            sb.append("</tr>");
+
+            count++;
         }
+
+        sb.append("</table>");
         sb.append("</body></html>");
-        JOptionPane.showMessageDialog(this, sb.toString());
+
+        JFrame frame = new JFrame("Bestenliste");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JEditorPane editorPane = new JEditorPane("text/html", sb.toString());
+        editorPane.setEditable(false);
+        editorPane.setOpaque(false);
+
+        JScrollPane scrollPane = new JScrollPane(editorPane);
+        scrollPane.setBorder(null);
+
+        frame.add(scrollPane);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Vollbild
+        frame.setVisible(true);
     }
 
     private ImageIcon makeRoundedImage(Image img, int diameter) {
@@ -608,7 +672,7 @@ public class MainMenu extends JFrame {
     }
 
     private void DailyQuiz() {
-        Quiz quiz = new Quiz(Fragen.geoFragen, this);
+        Quiz quiz = new Quiz(Fragen.dailyFragen, this);
         quiz.setVisible(true);
         this.setVisible(false);
     }
@@ -621,6 +685,12 @@ public class MainMenu extends JFrame {
 
     private void StädteQuiz() {
         Quiz quiz = new Quiz(Fragen.staedteFragen, this);
+        quiz.setVisible(true);
+        this.setVisible(false);
+    }
+
+    private void QuizMitLeben() {
+        QuizMitLives quiz = new QuizMitLives(Fragen.fragen);
         quiz.setVisible(true);
         this.setVisible(false);
     }

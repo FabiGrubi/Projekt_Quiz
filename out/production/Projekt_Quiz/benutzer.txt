@@ -1,4 +1,2 @@
-root;21.05.2025;0;1;21.05.2025;
-admin;26.05.2025;0;123;;
-main;26.05.2025;0;123;;
-fabian;16.05.2025;998171;2;27.05.2025;
+pascal;28.05.2025;50;1;;;
+fabian;16.05.2025;80;2;28.05.2025;,Fortgeschrittener,CEO;C:\Users\fabia\OneDrive - BHAK BHAS HLW Reutte\Bilder\AppIcon.png
