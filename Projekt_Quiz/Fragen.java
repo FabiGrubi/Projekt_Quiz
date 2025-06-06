@@ -1,7 +1,7 @@
 package Projekt_Quiz;
 
 public class Fragen {
-    public static final String[][] dailyFragen = {
+    public static final String[][] geoFragen = {
             {"Welcher ist der längste Fluss der Welt?", "Nil", "Amazonas", "Jangtse", "Mississippi"},
             {"Welcher ist der größte Ozean der Erde?", "Pazifik", "Atlantik", "Indischer Ozean", "Arktischer Ozean"},
             {"Wie heißt das größte Korallenriff der Welt?", "Great Barrier Reef", "Belize Barrier Reef", "Rotes Meer Riff", "Florida Reef"},

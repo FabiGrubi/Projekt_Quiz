@@ -12,25 +12,39 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+// Hauptklasse für die Quiz-Anwendung
 public class MainMenu extends JFrame {
+    // Map zur Speicherung der Benutzerdaten mit Benutzername als Schlüssel
     Map<String, Benutzer> benutzerMap = new HashMap<>();
+    // Datei zur Speicherung der Benutzerdaten
     private static final String DATEI = "benutzer.txt";
+    // Aktuelle Punkte des Benutzers
     int punkte = 0;
+    // Aktueller Benutzername
     String benutzername = "";
+    // Anmeldedatum des aktuellen Benutzers
     String anmeldedatum = "";
+    // Liste der vom Benutzer gekauften Titel
     private List<String> gekaufteTitel = new ArrayList<>();
+    // Aktueller Titel des Benutzers
     private String aktuellerTitel = "";
+    // Profilbild des Benutzers
     private ImageIcon profilBild = null;
 
+    // Konstruktor für MainMenu
     public MainMenu() {
         try {
+            // Setzt das Aussehen und Verhalten der UI
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // Lädt Benutzerdaten aus einer Datei
         datenLaden();
+        // Zeigt das Anmeldefenster an
         zeigeLoginFenster();
         try {
+            // Setzt das Anwendungsicon
             Image icon = ImageIO.read(getClass().getResource("/Bilder/AppIcon.png"));
             setIconImage(icon);
         } catch (IOException e) {
@@ -38,6 +52,7 @@ public class MainMenu extends JFrame {
         }
     }
 
+    // Initialisiert die Hauptbenutzeroberfläche der Anwendung
     private void initialisiereMainUI() {
         this.setTitle("Quiz - Geo-Quiz");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,39 +60,46 @@ public class MainMenu extends JFrame {
         this.getContentPane().setBackground(Color.WHITE);
         this.setLayout(new BorderLayout());
 
+        // Hauptpanel Einrichtung
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Titel-Label Einrichtung
         JLabel title = new JLabel("Wähle ein Quiz-Thema");
         title.setFont(new Font("Segoe UI", Font.BOLD, 36));
         title.setForeground(new Color(33, 37, 41));
         title.setHorizontalAlignment(SwingConstants.CENTER);
         mainPanel.add(title, BorderLayout.NORTH);
 
+        // Quiz-Panel Einrichtung mit Buttons für verschiedene Quiz-Typen
         JPanel quizPanel = new JPanel();
-        quizPanel.setLayout(new GridLayout(4, 1, 20, 20)); // Geändert auf 4 Zeilen
+        quizPanel.setLayout(new GridLayout(4, 1, 20, 20));
         quizPanel.setBackground(Color.WHITE);
         quizPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
 
+        // Erstellt Buttons für verschiedene Quiz-Typen
         JButton laenderButton = createStyledButton("Länder Quiz", 400, 80);
         JButton staedteButton = createStyledButton("Städte Quiz", 400, 80);
         JButton dailyQuizButton = createStyledButton("Daily Quiz", 400, 80);
-        JButton quizMitLebenButton = createStyledButton("Quiz mit Leben", 400, 80); // Neuer Button
+        JButton quizMitLebenButton = createStyledButton("Quiz mit Leben", 400, 80);
 
+        // Fügt die Buttons dem Quiz-Panel hinzu
         quizPanel.add(laenderButton);
         quizPanel.add(staedteButton);
         quizPanel.add(dailyQuizButton);
-        quizPanel.add(quizMitLebenButton); // Neuer Button hinzugefügt
+        quizPanel.add(quizMitLebenButton);
 
         mainPanel.add(quizPanel, BorderLayout.CENTER);
 
+        // Seiten-Panel Einrichtung mit zusätzlichen Optionen
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBackground(Color.WHITE);
         sidePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Erstellt Buttons für die Seiten-Panel-Optionen
         JButton shopButton = createStyledButton("Shop öffnen", 200, 60);
         JButton profilButton = createStyledButton("Profil ansehen", 200, 60);
         JButton punkteButton = createStyledButton("Punkte anzeigen", 200, 60);
@@ -85,6 +107,7 @@ public class MainMenu extends JFrame {
         JButton kontoLoeschenButton = createStyledButton("Konto löschen", 200, 60);
         JButton abmeldenButton = createStyledButton("Abmelden", 200, 60);
 
+        // Fügt die Buttons dem Seiten-Panel hinzu
         sidePanel.add(shopButton);
         sidePanel.add(Box.createVerticalStrut(20));
         sidePanel.add(profilButton);
@@ -99,6 +122,7 @@ public class MainMenu extends JFrame {
 
         mainPanel.add(sidePanel, BorderLayout.EAST);
 
+        // Action Listener für Quiz-Buttons
         dailyQuizButton.addActionListener(e -> {
             if (benutzername.equals("Unbekannt") || benutzername.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Bitte zuerst anmelden!");
@@ -145,6 +169,7 @@ public class MainMenu extends JFrame {
             QuizMitLeben();
         });
 
+        // Action Listener für Seiten-Panel-Buttons
         shopButton.addActionListener(e -> showShopFenster());
         profilButton.addActionListener(e -> showProfilFenster());
         punkteButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "Du hast aktuell " + punkte + " Punkte."));
@@ -159,6 +184,7 @@ public class MainMenu extends JFrame {
         this.setVisible(true);
     }
 
+    // Methode zur Erstellung gestylter Buttons
     private JButton createStyledButton(String text, int width, int height) {
         JButton button = new JButton(text);
         button.setMaximumSize(new Dimension(width, height));
@@ -180,6 +206,7 @@ public class MainMenu extends JFrame {
         return button;
     }
 
+    // Methode zur Anzeige des Anmeldefensters
     public void zeigeLoginFenster() {
         JFrame loginFrame = new JFrame("Anmeldung");
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -306,6 +333,7 @@ public class MainMenu extends JFrame {
                 }
                 loginFrame.dispose();
                 if (benutzername.equals("admin")) {
+                    // Admin-spezifische Aktionen können hier hinzugefügt werden
                 } else {
                     initialisiereMainUI();
                 }
@@ -329,6 +357,7 @@ public class MainMenu extends JFrame {
         loginFrame.setVisible(true);
     }
 
+    // Methode zum Laden der Benutzerdaten aus einer Datei
     private void datenLaden() {
         try (BufferedReader br = new BufferedReader(new FileReader("benutzer.txt"))) {
             String line;
@@ -365,6 +394,7 @@ public class MainMenu extends JFrame {
         }
     }
 
+    // Methode zum Speichern der Benutzerdaten in eine Datei
     public void speichereBenutzer() {
         try (PrintWriter pw = new PrintWriter("benutzer.txt")) {
             for (Benutzer benutzer : benutzerMap.values()) {
@@ -379,6 +409,7 @@ public class MainMenu extends JFrame {
         }
     }
 
+    // Methode zum Hinzufügen von Punkten zum aktuellen Benutzer
     public void punkteHinzufuegen(int punkte) {
         this.punkte += punkte;
         Benutzer benutzer = benutzerMap.get(benutzername);
@@ -388,6 +419,7 @@ public class MainMenu extends JFrame {
         }
     }
 
+    // Methode zum Löschen des aktuellen Benutzerkontos
     private void kontoLoeschen() {
         if (benutzerMap.containsKey(benutzername)) {
             int antwort = JOptionPane.showConfirmDialog(this, "Willst du wirklich deinen Account löschen?", "Account löschen",
@@ -402,6 +434,7 @@ public class MainMenu extends JFrame {
         }
     }
 
+    // Methode zur Anzeige des Shop-Fensters
     private void showShopFenster() {
         JFrame shopFrame = new JFrame("🛍️ Titel-Shop");
         shopFrame.setSize(1600, 1000);
@@ -500,6 +533,7 @@ public class MainMenu extends JFrame {
         shopFrame.setVisible(true);
     }
 
+    // Methode zur Anzeige der Bestenliste
     private void showBestenliste() {
         StringBuilder sb = new StringBuilder();
         List<Benutzer> liste = new ArrayList<>(benutzerMap.values());
@@ -571,6 +605,7 @@ public class MainMenu extends JFrame {
         frame.setVisible(true);
     }
 
+    // Methode zum Erstellen eines runden Bildes
     private ImageIcon makeRoundedImage(Image img, int diameter) {
         BufferedImage rounded = new BufferedImage(diameter, diameter, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = rounded.createGraphics();
@@ -581,6 +616,7 @@ public class MainMenu extends JFrame {
         return new ImageIcon(rounded);
     }
 
+    // Methode zur Anzeige des Benutzerprofil-Fensters
     private void showProfilFenster() {
         JFrame userFrame = new JFrame("Benutzerprofil");
         Benutzer benutzer = benutzerMap.get(benutzername);
@@ -671,8 +707,9 @@ public class MainMenu extends JFrame {
         userFrame.setVisible(true);
     }
 
+    // Methoden zum Starten der verschiedenen Quiz-Typen
     private void DailyQuiz() {
-        Quiz quiz = new Quiz(Fragen.dailyFragen, this);
+        Quiz quiz = new Quiz(Fragen.geoFragen, this);
         quiz.setVisible(true);
         this.setVisible(false);
     }
@@ -695,6 +732,7 @@ public class MainMenu extends JFrame {
         this.setVisible(false);
     }
 
+    // Innere Klasse zur Darstellung eines Benutzers
     public class Benutzer {
         private String name;
         private String anmeldedatum;
